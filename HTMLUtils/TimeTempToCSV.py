@@ -1,8 +1,14 @@
 #! /usr/bin/env python
 
 from html.parser import HTMLParser
+
 import re
 
+import tkinter as tk
+from tkinter import filedialog
+
+
+d = {}
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
@@ -35,11 +41,26 @@ class MyHTMLParser(HTMLParser):
 
         if self.ready_to_write:
             local_file = open('new.txt', 'a')
-            local_file.write(self.my_temperature + "," + self.my_date + "," + self.my_time + "\n")
-            local_file.close()
+            for line in local_file:
+                (key, val) = line.split()
+                d[int(key)] = val
+#            local_file.write(self.my_temperature + "," + self.my_date + "," + self.my_time + "\n")
+#            local_file.close()
             self.ready_to_write = False
 
+        def write_report(r, filename):
+            input_file = open(filename, "a")
+            for k, v in r.items():
+                line = '{}, {}'.format(k, v)
+                print(line, file=input_file)
+                print(d)
+            input_file.close()
 
-with open('../TestFiles/sample.html', 'r') as my_file:
+
+root = tk.Tk()
+root.withdraw()
+file_path = filedialog.askopenfilename()
+
+with open(file_path, 'r') as my_file:
     parser = MyHTMLParser()
     parser.feed(my_file.read())
