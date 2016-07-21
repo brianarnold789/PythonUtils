@@ -1,14 +1,41 @@
 #! /usr/bin/env python
 
+import re
+import sys
+import os
+import argparse
+from tkinter import filedialog, messagebox
+import tkinter.ttk
 from html.parser import HTMLParser
 
-import re
 
-import tkinter as tk
-from tkinter import filedialog
+def main(agrv):
+    parser = argparse.ArgumentParser(description='Read an input file and save the performance data as a csv.')
+    parser.add_argument('-i', '--file_name', help='Name of the input file, must be in the current working directory.',
+                        dest='infile_name', required=False)
+    parser.add_argument('-o', '--output_file_name', help='Name of the output file.', dest='outfile_name',
+                        required=False)
+    parser.add_argument('-v', '--verbose', help='Run script with increased output.', action='store_true',
+                        dest='verbose', required=False)
 
+    args = parser.parse_args()
 
-d = {}
+    if not args.infile_name:
+        root = tkinter.Tk()
+        root.withdraw()
+        root.filename = filedialog.askopenfilename(initialdir=os.getcwd(), title='Choose your file',
+                                                   filetypes=(('HTML files', '*.html'), ('all files', '*.*')))
+        # if we don't get a filename just bail
+        if root.filename:
+            args.infile_name = root.filename
+        else:
+            exit(0)
+
+    with open(str(args.infile_name), 'r') as my_file:
+        parser = MyHTMLParser()
+        parser.set_output_file("test.csv")
+        parser.feed(my_file.read())
+
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
@@ -18,6 +45,8 @@ class MyHTMLParser(HTMLParser):
         self.my_temperature = None
         self.my_date = None
         self.my_time = None
+        self.header = 0
+        self.outfile_name = None
 
 #    def handle_starttag(self, tag, attrs):
 #        print("found a start tag:", tag)
@@ -26,10 +55,10 @@ class MyHTMLParser(HTMLParser):
 #        print("found an end tag:", tag)
 
     def handle_data(self, data):
-        temp_match = re.match(r"Current: (\d+)", str(data))
+        temp_match = re.match(r"Current: (-?\d+)", str(data))
         if temp_match:
             self.my_temperature = temp_match.group(1)
-            # print(temp_match.group(1))
+            print(temp_match.group(1))
 
         date_match = re.match\
                 (r"(\d{1,2}[./]\d{2}[./]\d{4})\s(\d{2}[.:]\d{2}[.:]\d{2})\s(Will wait for \d{1,2} seconds)", str(data))
@@ -37,30 +66,21 @@ class MyHTMLParser(HTMLParser):
             self.my_date = date_match.group(1)
             self.my_time = date_match.group(2)
             self.ready_to_write = True
-            # print(date_match.group(1,2))
+            print(date_match.group(1,2))
 
         if self.ready_to_write:
-            local_file = open('new.txt', 'a')
-            for line in local_file:
-                (key, val) = line.split()
-                d[int(key)] = val
-#            local_file.write(self.my_temperature + "," + self.my_date + "," + self.my_time + "\n")
-#            local_file.close()
+            local_file = open(self.outfile_name, 'a')
+            if self.header == 0:
+                local_file.write("Temperature, Date, Time")
+                self.header = 1
+
+            local_file.write(str(self.my_temperature) + "," + str(self.my_date) + "," + str(self.my_time) + "\n")
+            local_file.close()
             self.ready_to_write = False
 
-        def write_report(r, filename):
-            input_file = open(filename, "a")
-            for k, v in r.items():
-                line = '{}, {}'.format(k, v)
-                print(line, file=input_file)
-                print(d)
-            input_file.close()
+    def set_output_file(self, out_file):
+        self.outfile_name = out_file
 
 
-root = tk.Tk()
-root.withdraw()
-file_path = filedialog.askopenfilename()
-
-with open(file_path, 'r') as my_file:
-    parser = MyHTMLParser()
-    parser.feed(my_file.read())
+if __name__ == "__main__":
+    main(sys.argv[1:])
