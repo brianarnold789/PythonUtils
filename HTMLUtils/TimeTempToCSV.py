@@ -45,6 +45,9 @@ def main(agrv):
         parser.set_output_file(args.outfile_name)
         parser.feed(my_file.read())
 
+    # confirmation dialog because Kristina wanted one
+    messagebox.showinfo('File Saved', 'New temperature over time data file saved to:\n' + args.outfile_name)
+
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
