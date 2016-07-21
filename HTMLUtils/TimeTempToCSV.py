@@ -31,9 +31,13 @@ def main(agrv):
         else:
             exit(0)
 
+    if not args.outfile_name:
+        match = re.search('(.*)\.html', args.infile_name)
+        args.outfile_name = match.group(1) + '.csv'
+
     with open(str(args.infile_name), 'r') as my_file:
         parser = MyHTMLParser()
-        parser.set_output_file("test.csv")
+        parser.set_output_file(args.outfile_name)
         parser.feed(my_file.read())
 
 
@@ -71,7 +75,7 @@ class MyHTMLParser(HTMLParser):
         if self.ready_to_write:
             local_file = open(self.outfile_name, 'a')
             if self.header == 0:
-                local_file.write("Temperature, Date, Time")
+                local_file.write("Temperature,Date,Time\n")
                 self.header = 1
 
             local_file.write(str(self.my_temperature) + "," + str(self.my_date) + "," + str(self.my_time) + "\n")
