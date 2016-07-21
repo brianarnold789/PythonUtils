@@ -4,9 +4,10 @@ import re
 import sys
 import os
 import argparse
-from tkinter import filedialog, messagebox
 import tkinter.ttk
+from tkinter import filedialog, messagebox
 from html.parser import HTMLParser
+from datetime import datetime
 
 
 def main(agrv):
@@ -31,9 +32,13 @@ def main(agrv):
         else:
             exit(0)
 
+    # assumes we are inputting html files, else create a file with time stamp as name
     if not args.outfile_name:
         match = re.search('(.*)\.html', args.infile_name)
-        args.outfile_name = match.group(1) + '.csv'
+        if match:
+            args.outfile_name = match.group(1) + '.csv'
+        else:
+            args.outfile_name = 'timeTemp-' + str(datetime.now()) + '.csv'
 
     with open(str(args.infile_name), 'r') as my_file:
         parser = MyHTMLParser()
