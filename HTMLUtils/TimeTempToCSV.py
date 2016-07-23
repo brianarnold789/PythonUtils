@@ -83,10 +83,10 @@ class MyHTMLParser(HTMLParser):
         if self.ready_to_write:
             local_file = open(self.outfile_name, 'a')
             if self.header == 0:
-                local_file.write("Temperature,Date,Time\n")
+                local_file.write("Time,Temprature\n")
                 self.header = 1
 
-            local_file.write(str(self.my_temperature) + "," + str(self.my_date) + "," + str(self.my_time) + "\n")
+            local_file.write(str(self.my_time) + "," + str(self.my_temperature) + "\n")
             local_file.close()
             self.ready_to_write = False
 
