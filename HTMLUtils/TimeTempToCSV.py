@@ -60,11 +60,11 @@ class MyHTMLParser(HTMLParser):
         self.header = 0
         self.outfile_name = None
 
-#    def handle_starttag(self, tag, attrs):
-#        print("found a start tag:", tag)
-
-#    def handle_endtag(self, tag):
-#        print("found an end tag:", tag)
+    # def handle_starttag(self, tag, attrs):
+    #     print("found a start tag:", tag)
+    #
+    # def handle_endtag(self, tag):
+    #     print("found an end tag:", tag)
 
     def handle_data(self, data):
         temp_match = re.match(r"Current: (-?\d+)", str(data))
@@ -73,17 +73,18 @@ class MyHTMLParser(HTMLParser):
             print(temp_match.group(1))
 
         date_match = re.match\
-                (r"(\d{1,2}[./]\d{2}[./]\d{4})\s(\d{2}[.:]\d{2}[.:]\d{2})\s(Will wait for \d{1,2} seconds)", str(data))
+                (r"(\d{1,2}[./]\d{1,2}[./]\d{4})\s(\d{2}[.:]\d{2}[.:]\d{2})\s(Will wait for \d{1,2} seconds)", str(data))
         if date_match:
+            print('date matched...')
             self.my_date = date_match.group(1)
             self.my_time = date_match.group(2)
             self.ready_to_write = True
-            print(date_match.group(1,2))
+            print(date_match.group(1, 2))
 
         if self.ready_to_write:
             local_file = open(self.outfile_name, 'a')
             if self.header == 0:
-                local_file.write("Time,Temprature\n")
+                local_file.write("Time,Temperature\n")
                 self.header = 1
 
             local_file.write(str(self.my_time) + "," + str(self.my_temperature) + "\n")
